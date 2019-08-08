@@ -12,10 +12,17 @@ app.use(cors());
 //Whenever someone connects this gets executed
 var clients = 0;
 io.on('connection', function (socket) {
+    var readyToPlay = 0;
     console.log('A user connected');
     clients++;
     io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
 
+    socket.on('readyToPlay', function () {
+        readyToPlay++;
+        if (readyToPlay >= 2) {
+            io.sockets.emit('allReadyToPlay');
+        }
+    });
 
     socket.on('playEvent', function () {
         console.log('The play button was pressed by the client.')
