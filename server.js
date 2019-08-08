@@ -29,6 +29,11 @@ io.on('connection', function (socket) {
         }
     });
 
+    socket.on('peerReady', function (data) {
+        console.log("peerReady event occured.")
+        socket.broadcast.emit("peerReady", { userAgent: data.userAgent })
+    })
+
     socket.on('playEvent', function () {
         console.log('The play button was pressed by the client.')
         io.sockets.emit('broadcastPlay');
