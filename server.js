@@ -15,6 +15,9 @@ var readyToPlay = 0;
 io.on('connection', function (socket) {
     console.log('A user connected');
     clients++;
+    if (readyToPlay < 0) {
+        readyToPlay = 0;
+    }
     io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
 
     socket.on('readyToPlay', function () {
