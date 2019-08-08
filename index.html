@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hello world</title>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+
+<script>
+    var socket = io();
+
+    socket.on('broadcast', function (data) {
+        console.log(data.description);
+    })
+
+    socket.on('broadcastPlay', function () {
+        plyr.play();
+    })
+
+
+    function playConcurrently() {
+        const btn = document.getElementById('play-pause');
+        if (btn.innerText == 'Play') {
+            btn.innerText = 'Pause';
+            console.log("Play function executed.")
+            socket.emit('playEvent');
+        }
+        else {
+            btn.innerText = 'Play';
+            console.log("Pause function executed.")
+            socket.emit('pauseEvent');
+        }
+    }
+</script>
+
+<body>Hello world
+
+    <button type="button" id="play-pause" onclick="playConcurrently()">Play</button>
+</body>
+
+</html>
