@@ -18,7 +18,9 @@ io.on('connection', function (socket) {
     io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
 
     socket.on('readyToPlay', function () {
+        console.log("readyToPlay event occured.")
         readyToPlay++;
+        console.log("Number of clients ready to play", readyToPlay);
         if (readyToPlay >= 2) {
             io.sockets.emit('allReadyToPlay');
         }
