@@ -46,6 +46,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('A user disconnected');
         clients--;
+        readyToPlay--;
         io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
     });
 });
