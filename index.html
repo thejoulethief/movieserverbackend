@@ -1,25 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
-<head>
-    <title>Hello world</title>
-</head>
+<style>
+    h1 {
+        text-align: center;
+    }
+
+    video {
+        /* height: 60vh; */
+    }
+</style>
+<script src="https://cdn.plyr.io/3.5.6/plyr.js"></script>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.5.6/plyr.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 
 <script>
-    var socket = io();
+    document.addEventListener('DOMContentLoaded', () => {
+        // This is the bare minimum JavaScript. You can opt to pass no arguments to setup.
+        const player = new Plyr('#player', { disableContextMenu: false, clickToPlay: false, autoplay: true, muted: true });
+
+        // Expose
+        window.player = player;
+
+        // Bind event listener
+        function on(selector, type, callback) {
+            document.querySelector(selector).addEventListener(type, callback, false);
+        }
+
+        // // Play
+        // on('.js-play', 'click', () => {
+        //     player.play();
+        // });
+
+        // // Pause
+        // on('.js-pause', 'click', () => {
+        //     player.pause();
+        // });
+
+        // // Stop
+        // on('.js-stop', 'click', () => {
+        //     player.stop();
+        // });
+
+        // // Rewind
+        // on('.js-rewind', 'click', () => {
+        //     player.rewind();
+        // });
+
+        // // Forward
+        // on('.js-forward', 'click', () => {
+        //     player.forward();
+        // });
+
+    });
+</script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Anupam's Custom video server</title>
+</head>
+
+<body style="background-color: #252423; color: #F6F4F2">
+    <h1 style="padding: 0.1rem">Watch 💕🎬 here!</h1>
+    <div class="container-fluid" style="height: 5vh"></div>
+    <div class="container-fluid">
+        <div class="column">
+            <div class="col-12">
+                <video id="player" playsinline controls>
+                    <source src="http://107.173.80.125/videos/Solaris.mp4" type="video/mp4" />
+                    <track kind="captions" label="English captions" src="http://107.173.80.125/videos/subtitles.vtt"
+                        srclang="en" default />
+                </video>
+
+            </div>
+            <div id="buttons-bar" class="col-12" style="visibility: visible; display: flex;
+            justify-content: center;
+            padding-top: 3vh;
+        ">
+                <button type="button" style="background-color: #18A7EF" class="btn btn-primary" id="play-pause"
+                    onclick="playConcurrently()">Play</button>
+                <button type="button" style="margin-left: 10px" class="btn btn-warning" id="set-time"
+                    onclick="setTime()">Set Time</button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const btn = document.getElementById('play-pause');
+    const buttonsBar = document.getElementById('buttons-bar');
+    var socket = io("http://107.173.80.125:3000");
 
     socket.on('broadcast', function (data) {
         console.log(data.description);
     })
 
+    // $('#player').on('canplay', event => {
+    //     console.log("Ready to play on this client!")
+    //     // socket.emit("readyToPlay");
+    //     socket.emit("peerReady", { userAgent: window.navigator.userAgent })
+    // });
+
+    // socket.on('allReadyToPlay', function () {
+    //     console.log("Buffering complete on peer.");
+    //     buttonsBar.style.visibility = "visible";
+    // })
+
+
+    // socket.on('peerReady', function (data) {
+    //     console.log("Buffering complete on peer" + data.userAgent);
+    //     buttonsBar.style.visibility = "visible";
+    // })
+
+
     socket.on('broadcastPlay', function () {
-        plyr.play();
+        console.log(player.ready);
+        player.play();
+        btn.innerText = 'Pause';
+    })
+
+
+    socket.on('broadcastPause', function () {
+        player.pause();
+        btn.innerText = 'Play';
+
+    })
+
+    socket.on('broadcastTime', function (data) {
+        player.currentTime = data.time;
+        player.pause();
+        btn.innerText = 'Play';
     })
 
 
     function playConcurrently() {
-        const btn = document.getElementById('play-pause');
         if (btn.innerText == 'Play') {
             btn.innerText = 'Pause';
             console.log("Play function executed.")
@@ -31,11 +157,10 @@
             socket.emit('pauseEvent');
         }
     }
+    function setTime() {
+        console.log(player.currentTime);
+        socket.emit('setTime', { time: player.currentTime })
+    }
 </script>
-
-<body>Hello world
-
-    <button type="button" id="play-pause" onclick="playConcurrently()">Play</button>
-</body>
 
 </html>
