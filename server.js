@@ -11,33 +11,21 @@ app.use(cors());
 
 //Whenever someone connects this gets executed
 var clients = 0;
-var readyToPlay = 0;
 io.on('connection', function (socket) {
     console.log('A user connected');
     clients++;
-    if (readyToPlay < 0) {
-        readyToPlay = 0;
-    }
+
     io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
-
-    socket.on('readyToPlay', function () {
-        console.log("readyToPlay event occured.")
-        readyToPlay++;
-        console.log("Number of clients ready to play", readyToPlay);
-        if (readyToPlay >= 2) {
-            io.sockets.emit('allReadyToPlay');
-        }
-    });
-
-    socket.on('peerReady', function (data) {
-        console.log("peerReady event occured.")
-        socket.broadcast.emit("peerReady", { userAgent: data.userAgent })
-    })
 
     socket.on('playEvent', function () {
         console.log('The play button was pressed by the client.')
         io.sockets.emit('broadcastPlay');
     });
+
+    socket.on('messageSent', function (data) {
+        console.log("The following message was sent", data.text)
+        socket.broadcast.emit('messageRecieved', { user: socket.id, text: data.text })
+    })
 
 
     socket.on('pauseEvent', function () {
@@ -54,7 +42,6 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('A user disconnected');
         clients--;
-        readyToPlay--;
         io.sockets.emit('broadcast', { description: clients + ' clients connected!' });
     });
 });

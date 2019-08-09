@@ -9,6 +9,13 @@
     video {
         /* height: 60vh; */
     }
+
+    .text-bubble {
+        background-color: #18A7EF;
+        word-wrap: break-word;
+        width: 100%;
+
+    }
 </style>
 <script src="https://cdn.plyr.io/3.5.6/plyr.js"></script>
 <link rel="stylesheet" href="https://cdn.plyr.io/3.5.6/plyr.css" />
@@ -74,7 +81,7 @@
 </head>
 
 <body style="background-color: #252423; color: #F6F4F2">
-    <h1 style="padding: 0.1rem">Watch 💕🎬 here!</h1>
+    <h1 style="margin-top: 1rem">Watch 💕🎬 here!</h1>
     <div class="container-fluid" style="height: 5vh"></div>
     <div class="container-fluid">
         <div class="column">
@@ -86,14 +93,33 @@
                 </video>
 
             </div>
+            <div id="clients" class="container col-12" style="display: flex;
+            justify-content: center;font-size: 1rem;
+    padding-top: 1vh;
+    font-weight: bold;
+"></div>
             <div id="buttons-bar" class="col-12" style="visibility: visible; display: flex;
             justify-content: center;
-            padding-top: 3vh;
+            padding-top: 2vh;
         ">
                 <button type="button" style="background-color: #18A7EF" class="btn btn-primary" id="play-pause"
                     onclick="playConcurrently()">Play</button>
                 <button type="button" style="margin-left: 10px" class="btn btn-warning" id="set-time"
                     onclick="setTime()">Set Time</button>
+                <button type="button" style="background-color: #ffffff; margin-left: 10px; " class="btn btn-warning"
+                    id="set-time" onclick="setTimeToZero()">Origin</button>
+            </div>
+
+            <div class="container col-12">
+                <div class="column" style="height: 30vh">
+                    <div id="chat-box" style="background-color:#252423;height: 80%; width: 100%; overflow: scroll">
+
+                    </div>
+                    <div class="send-form">
+                        <input id="text-field" style="width: 90%; border-radius:25px"></input>
+                        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -101,29 +127,16 @@
 <script>
     const btn = document.getElementById('play-pause');
     const buttonsBar = document.getElementById('buttons-bar');
+    const clients = document.getElementById('clients');
+    const chatbox = document.getElementById('chat-box');
+    const messageInput = document.getElementById('text-field');
+
     var socket = io("http://107.173.80.125:3000");
 
     socket.on('broadcast', function (data) {
         console.log(data.description);
+        clients.innerText = "✔️" + data.description;
     })
-
-    // $('#player').on('canplay', event => {
-    //     console.log("Ready to play on this client!")
-    //     // socket.emit("readyToPlay");
-    //     socket.emit("peerReady", { userAgent: window.navigator.userAgent })
-    // });
-
-    // socket.on('allReadyToPlay', function () {
-    //     console.log("Buffering complete on peer.");
-    //     buttonsBar.style.visibility = "visible";
-    // })
-
-
-    // socket.on('peerReady', function (data) {
-    //     console.log("Buffering complete on peer" + data.userAgent);
-    //     buttonsBar.style.visibility = "visible";
-    // })
-
 
     socket.on('broadcastPlay', function () {
         console.log(player.ready);
@@ -144,6 +157,11 @@
         btn.innerText = 'Play';
     })
 
+    socket.on("messageRecieved", function (data) {
+        console.log(data.name, data.text);
+    })
+
+
 
     function playConcurrently() {
         if (btn.innerText == 'Play') {
@@ -160,6 +178,19 @@
     function setTime() {
         console.log(player.currentTime);
         socket.emit('setTime', { time: player.currentTime })
+    }
+
+    function setTimeToZero() {
+        console.log("Setting time to zero.");
+        socket.emit('setTime', { time: 0 })
+    }
+
+    function sendMessage() {
+        const text_bubble = document.createElement('div')
+        text_bubble.innerText = "You: " + messageInput.value;
+        text_bubble.classList.add("text-bubble")
+        chatbox.appendChild(text_bubble);
+        socket.emit('messageSent', { text: messageInput.value })
     }
 </script>
 
